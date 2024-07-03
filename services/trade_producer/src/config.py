@@ -12,9 +12,13 @@ load_dotenv(dotenv_path)
 
 from pydantic_settings import BaseSettings
 
+# challenge: assert live historical to be one of those values
+# challenge: convert product_id to product_ids
 class Config(BaseSettings):
-    product_id: str = 'ETH/EUR'
+    product_id: str = 'BTC/EUR'
     kafka_broker_address: str = os.environ['KAFKA_BROKER_ADDRESS']
     kafka_topic_name: str = 'trade'
+    live_or_historical: str = 'live'
+    last_n_days: int = 1
 
 config = Config()
