@@ -3,6 +3,31 @@ import requests
 import json
 from loguru import logger
 
+class KrakenRestAPIMultipleProducts:
+    def __init__(
+        self,
+        product_ids: List[str],
+        last_n_days: int
+            ) -> None:
+        self.product_ids = product_ids
+        self.kraken_apis = [KrakenRestAPI(product_id=product_id, last_n_days=last_n_days) for product_id in product_ids]
+
+    def get_trades(self) -> List[Dict]:
+        trades = []
+        for kraken_api in self.kraken_apis:
+            if kraken_api.is_done():
+                continue
+            else:
+                trades += kraken_api.get_trades()
+        return trades
+    
+    def is_done(self) -> bool:
+        for kraken_api in self.kraken_apis:
+            if not kraken_api.is_done():
+                return False
+        return True
+
+
 class KrakenRestAPI:
 
     URL = 'https://api.kraken.com/0/public/Trades?pair={product_id}&since={since_sec}'

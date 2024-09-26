@@ -5,12 +5,12 @@ from quixstreams import Application
 
 from src.config import config
 from src.kraken_api.websocket import KrakenWebsocketTradeAPI
-from src.kraken_api.rest import KrakenRestAPI
+from src.kraken_api.rest import KrakenRestAPIMultipleProducts
 
 def produce_trades(
         kafka_broker_address: str, 
         kafka_topic_name: str, 
-        product_id: str,
+        product_ids: List,
         live_or_historical: str,
         last_n_days: int) -> None:
     """
@@ -28,12 +28,12 @@ def produce_trades(
 
     topic = app.topic(name=kafka_topic_name, value_serializer='json')
 
-    logger.info(f'Creating the Kraken API to fetch data for {product_id}')
+    logger.info(f'Creating the Kraken API to fetch data for {product_ids}')
 
     if live_or_historical == 'live':
-        kraken_api = KrakenWebsocketTradeAPI(product_id=product_id)
+        kraken_api = KrakenWebsocketTradeAPI(product_ids=product_ids)
     else:
-        kraken_api = KrakenRestAPI(product_id=product_id, last_n_days=last_n_days)
+        kraken_api = KrakenRestAPIMultipleProducts(product_ids=product_ids, last_n_days=last_n_days)
 
     logger.info('Creating the producer...')
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     produce_trades(
         kafka_broker_address=config.kafka_broker_address, 
         kafka_topic_name=config.kafka_topic_name,
-        product_id=config.product_id,
+        product_ids=config.product_ids,
         live_or_historical=config.live_or_historical,
         last_n_days=config.last_n_days
         )

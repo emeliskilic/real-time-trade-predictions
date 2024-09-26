@@ -8,34 +8,33 @@ from websocket import create_connection
 class KrakenWebsocketTradeAPI:
     URL = 'wss://ws.kraken.com/v2'
 
-    def __init__(self, product_id: str):
-        self.product_id = product_id
+    def __init__(self, product_ids: List):
+        self.product_ids = product_ids
 
         # establish connection
         self._ws = create_connection(self.URL)
         logger.info('Connection established')
 
         # subscribe to the trades for the given product_id
-        self._subscribe(product_id)
+        self._subscribe(product_ids)
 
-    def _subscribe(self, product_id: str):
-        logger.info(f'Subcribing to trades for {product_id}')
+    def _subscribe(self, product_ids: List):
+        logger.info(f'Subcribing to trades for {product_ids}')
         msg = {
             'method': 'subscribe',
             'params': {
                 'channel': 'trade',
-                'symbol': [
-                    product_id,
-                ],
+                'symbol': product_ids,
                 'snapshot': False,
             },
         }
         self._ws.send(json.dumps(msg))
         logger.info('Subscription worked!')
 
-        # Discarding the first two messages as they are not informative
-        _ = self._ws.recv()
-        _ = self._ws.recv()
+        for product_id in product_ids:
+            # Discarding the first two messages as they are not informative
+            _ = self._ws.recv()
+            _ = self._ws.recv()
 
     def get_trades(self) -> List[Dict]:
         # mock_trades = [
@@ -67,14 +66,12 @@ class KrakenWebsocketTradeAPI:
         for trade in message['data']:
             trades.append(
                 {
-                    'product_id': self.product_id,
+                    'product_id': trade['symbol'],
                     'price': trade['price'],
                     'volume': trade['qty'],
                     'timestamp': trade['timestamp'],
                 }
             )
-
-        # breakpoint()
         return trades
 
     def is_done(self) -> bool:

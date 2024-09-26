@@ -1,5 +1,6 @@
 import os
 from dotenv import load_dotenv, find_dotenv
+from typing import List
 
 # load my .env file variables as environment variables so I can access them
 # with os.environ[] statements
@@ -15,7 +16,7 @@ from pydantic_settings import BaseSettings
 # challenge: assert live historical to be one of those values
 # challenge: convert product_id to product_ids
 class Config(BaseSettings):
-    product_id: str = 'BTC/EUR'
+    product_ids: List = ['BTC/EUR', 'ETH/USD']
     kafka_broker_address: str = os.environ['KAFKA_BROKER_ADDRESS']
     kafka_topic_name: str = 'trade'
     live_or_historical: str = 'live'
