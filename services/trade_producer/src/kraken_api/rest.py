@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import requests
 import json
 from loguru import logger
@@ -10,13 +10,20 @@ class KrakenRestAPI:
     def __init__(
             self,
             product_id: List[str],
-            from_ms: int,
-            to_ms: int,
+            last_n_days: int
                 ) -> None:
         self.product_id = product_id
-        self.from_ms = from_ms
-        self.to_ms = to_ms
+        self.from_ms, self.to_ms = self._init_from_to_ms(last_n_days)
+        self.last_trade_ms = self.from_ms
         self._is_done = False
+
+    @staticmethod
+    def _init_from_to_ms(last_n_days: int) -> Tuple[int,int]:
+        from datetime import datetime, timezone
+        today_date = datetime.now(timezone.utc).replace(hour=0,minute=0,second=0,microsecond=0)
+        to_ms = int(today_date.timestamp() * 1000)
+        from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
+        return from_ms, to_ms
 
     def get_trades(self) -> List[Dict]:
 
@@ -24,7 +31,7 @@ class KrakenRestAPI:
         headers = {
         'Accept': 'application/json'
         }
-        since_sec = self.from_ms//1000
+        since_sec = self.last_trade_ms//1000
         url = self.URL.format(product_id=self.product_id, since_sec=since_sec)
         response = requests.request("GET", url, headers=headers, data=payload)
         
@@ -44,13 +51,17 @@ class KrakenRestAPI:
                 'product_id': self.product_id
             })
 
+        # filter out the trades that are beyond the to_ms
+        trades = [trade for trade in trades if trade['time'] <= self.to_ms//1000]
+
+        # check if we are done fetching historical data
         last_ts_in_ns = int(data['result']['last'])
-        last_ts = last_ts_in_ns // 1_000_000
-        if last_ts >= self.to_ms:
+        self.last_trade_ms = last_ts_in_ns // 1_000_000
+        if self.last_trade_ms >= self.to_ms:
             self._is_done = True
 
         logger.debug('len trades: ' + str(len(trades)))
-        logger.debug('last ts: ' + str(last_ts))
+        logger.debug('last ts: ' + str(self.last_trade_ms))
 
         return trades
 

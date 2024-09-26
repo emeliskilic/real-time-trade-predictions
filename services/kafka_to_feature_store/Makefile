@@ -1,3 +1,6 @@
+run-dev:
+	poetry run python src/main.py
+
 build:
 	docker build -t kafka-to-feature-store .
 
@@ -12,3 +15,6 @@ lint:
 
 format:
 	ruff format .
+
+lint-and-format:
+	lint format

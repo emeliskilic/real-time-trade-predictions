@@ -1,5 +1,6 @@
 import hopsworks
 import pandas as pd
+from typing import List
 from loguru import logger
 
 from src.config import config
@@ -7,7 +8,7 @@ from src.config import config
 def push_data_to_feature_store(
         feature_group_name: str,
         feature_group_version: str,
-        data: dict,
+        data: List[dict],
 ) -> None:
     """
     Pushes given data to the feature store
@@ -34,7 +35,7 @@ def push_data_to_feature_store(
 
     # breakpoint()
 
-    data = pd.DataFrame([data])
+    data = pd.DataFrame(data)
     
     # Write the data to the feature group
     ohlc_feature_group.insert(data)

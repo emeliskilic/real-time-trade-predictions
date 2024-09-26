@@ -33,9 +33,7 @@ def produce_trades(
     if live_or_historical == 'live':
         kraken_api = KrakenWebsocketTradeAPI(product_id=product_id)
     else:
-        to_ms = int(time.time() * 1000)
-        from_ms = to_ms - last_n_days * 24 * 60 * 60 * 1000
-        kraken_api = KrakenRestAPI(product_id=product_id, from_ms=from_ms, to_ms=to_ms)
+        kraken_api = KrakenRestAPI(product_id=product_id, last_n_days=last_n_days)
 
     logger.info('Creating the producer...')
 
