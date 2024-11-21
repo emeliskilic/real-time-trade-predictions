@@ -16,7 +16,8 @@ from pydantic_settings import BaseSettings
 # challenge: assert live historical to be one of those values
 # challenge: convert product_id to product_ids
 class Config(BaseSettings):
-    product_ids: List = ['BTC/EUR', 'ETH/USD']
+    product_ids: List = [#'BTC/EUR', 
+                         'ETH/USD']
     kafka_broker_address: str = os.environ['KAFKA_BROKER_ADDRESS']
     kafka_topic_name: str = 'trade'
     live_or_historical: str = 'live'

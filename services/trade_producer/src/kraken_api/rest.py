@@ -2,6 +2,7 @@ from typing import List, Dict, Tuple
 import requests
 import json
 from loguru import logger
+from time import sleep
 
 class KrakenRestAPIMultipleProducts:
     def __init__(
@@ -64,17 +65,19 @@ class KrakenRestAPI:
         data = json.loads(response.text)
 
         # challenge: check if there is an error in the response
-        #if data['error'] is not None:
-        #    raise Exception(data['error'])
+        if ('error' in data) and ('EGeneral:Too many requests' in data['error']):
+            logger.info('too many requests, waiting for 30 seconds')
+            sleep(30)
 
-        trades = []
-        for trade in data['result'][self.product_id]:
-            trades.append({
+        trades = [
+            {
                 'price': float(trade[0]),
                 'volume': float(trade[1]),
                 'time': int(trade[2]),
                 'product_id': self.product_id
-            })
+            } 
+            for trade in data['result'][self.product_id]
+        ] 
 
         # filter out the trades that are beyond the to_ms
         trades = [trade for trade in trades if trade['time'] <= self.to_ms//1000]
@@ -88,6 +91,7 @@ class KrakenRestAPI:
         logger.debug('len trades: ' + str(len(trades)))
         logger.debug('last ts: ' + str(self.last_trade_ms))
 
+        sleep(1)
         return trades
 
     def is_done(self) -> bool:

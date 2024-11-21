@@ -9,6 +9,7 @@ def push_data_to_feature_store(
         feature_group_name: str,
         feature_group_version: str,
         data: List[dict],
+        online_or_offline: str
 ) -> None:
     """
     Pushes given data to the feature store
@@ -36,6 +37,10 @@ def push_data_to_feature_store(
     # breakpoint()
 
     data = pd.DataFrame(data)
+
+    breakpoint()
     
     # Write the data to the feature group
-    ohlc_feature_group.insert(data)
+    ohlc_feature_group.insert(data, 
+                              write_options={
+                                  "start_offline_materialization": True if online_or_offline == 'offline' else False})
